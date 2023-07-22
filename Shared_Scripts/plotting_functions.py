@@ -71,9 +71,9 @@ def bin_by_feature_correlation (dataset, x,y="rate shifted - rate swapped (NN)",
     annotate(ax,x=x, y=y, data=temp)
     plt.show()
 
-def correlation (dataset, x,y="rate shifted - rate swapped (NN)",diatonic="include", normalize=True, figsize=(6,6), type='pearson', itirations = 10000):
+def correlation (dataset, x,y="rate shifted - rate swapped (NN)",diatonic="include", normalize=True, figsize=(6,6), type='pearson', itirations = 10000, show_stats=True, width=8, height=6):
     temp = dataset #loading dataset
-    temp = temp.groupby("set").mean().reset_index() #collapsing subject by set
+    temp = temp.groupby("set").mean(numeric_only=True).reset_index() #collapsing subject by set
     if(diatonic=="exclude"): temp = temp[temp['subset_of_diatonic']==False]
     elif(diatonic=="only"): temp = temp[temp['subset_of_diatonic']==True]
 
@@ -85,10 +85,11 @@ def correlation (dataset, x,y="rate shifted - rate swapped (NN)",diatonic="inclu
     fig, ax = plt.subplots(figsize=figsize)
 
     #plot the data
-    fig.set_size_inches(8, 6)
+    fig.set_size_inches(width, height)
 
     sns.regplot(x=x, y=y, data=temp, ax=ax)
-    annotate(ax,x=x, y=y, data=temp, type=type,itirations=itirations)
+    if show_stats:
+        annotate(ax,x=x, y=y, data=temp, type=type,itirations=itirations)
     # plt.show()
 
 
