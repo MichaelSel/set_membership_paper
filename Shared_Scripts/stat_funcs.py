@@ -11,7 +11,7 @@ from scipy import stats
 from copy import deepcopy as dc
 import matplotlib.pyplot as plt
 from scipy import spatial
-
+import pingouin as pg
 
 # Function to shuffle contents of a Panda structure
 def shuffle_panda(df, n, axis=0):
@@ -537,3 +537,57 @@ def ridge_regression(dataset, X_vars,y_vars):
     score = r2_score(y, y_prediction)
     coefficients = clf.coef_ * X.std(axis=0)
     return score, coefficients
+
+
+# function to run permutation test for a variety of statistical comparisons. BehavMeasure ('RT' or 'PC'). stick with
+# F-value here. Conds argument needs to be an array of size 1x2 (string labels)
+def permtest_ANOVA_mixed(data_panda, dv, between_measure, within_measure, ids, reps):
+
+    # initialize vector to hold statistic on each iteration
+    rand_vals = list()
+
+    # get observed statistics (interaction) for two-way ANOVA
+
+    results = pg.mixed_anova(dv=dv, between=between_measure,
+                             within=within_measure, subject=ids, data=data_panda)
+
+    # get observed interaction F-value: mixed-effects interaction
+    obs_stat = results.F[2]
+
+    # deep copy of panda structure
+    shuffled_panda = data_panda.copy()
+
+    # loop through repetitions
+    for ii in range(reps):
+
+        print('\r{} of {}'.format(ii, reps), end='')
+
+        # shuffle column with behavioral measure of interest (RT or PC)
+        shuffled_panda[dv] = np.random.permutation(shuffled_panda[dv].values)
+
+        # get randomized statistic (interaction) for two-way ANOVA
+        results_rand= pg.mixed_anova(dv=dv, between=between_measure,
+                                 within=within_measure, subject=ids, data=shuffled_panda)
+
+        # get interaction F-value for shuffled structure: interaction
+        F_vals_rand = results_rand.F[2]
+
+        # get interaction F-value for shuffled structure: condition-task
+        rand = F_vals_rand
+
+        # push back rand F value
+        rand_vals.append(rand)
+
+    rand_vals = np.array(rand_vals)
+
+    # look at probability on either side of the distribution based on the observed statistic - this function is
+    # therefore order invariant with respect to its inputs
+    prob = np.mean(rand_vals > obs_stat)
+
+    _ = plt.hist(rand_vals, bins='auto')  # arguments are passed to np.histogram
+    plt.show()
+
+    print(f'p = {prob}')
+    print(f'obs_stat = {obs_stat}')
+
+    return obs_stat, prob
