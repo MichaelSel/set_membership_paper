@@ -129,7 +129,7 @@ def permtest_coeffs(X_vars,y_vars,coefficients,dataset, n_iter = 10000, plot=Fal
     # store p-values
     coefs['vars'] = X_vars
     coefs = pd.DataFrame(data={'vars': X_vars, "Coefficient importance": coefficients})
-    return coefs
+    return coefs, P_Vals
 
 # function to run permutation test for a pearson correlation
 def perm_t_test_unpaired(X, Y, reps):
