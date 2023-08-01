@@ -22,17 +22,22 @@ def calc_group_level(processed_dir, processed_data_pickle_filename, qualtrics_pr
     # Ignore malformed trials (only selects trials that have an empty 'malformed' field)
     ATND = ATND[ATND['malformed'] == ""]
 
+
+    # Rename "sona_x" to "sona"
+    ATND = ATND.rename(columns={'sona_x': 'sona'})
+
+
     # Starts a new dataframe called "GL" which will store the group-level calculated fields. The following line
     # keeps the median of the response
-    GL = ATND.groupby(['subject', 'set', 'stimulus']).median().reset_index()
+    GL = ATND.groupby(['sona','subject', 'set', 'stimulus']).median().reset_index()
 
     GL = GL.iloc[:, :3]  # Selects only the first 3 columns
 
 
     # Take median response
-    median = ATND.groupby(['subject', 'set', 'stimulus'])['response_numeric'].median().reset_index()
+    median = ATND.groupby(['sona','subject', 'set', 'stimulus'])['response_numeric'].median().reset_index()
     median = median.rename(columns={'response_numeric': 'likert_median'})
-    median = median.pivot(index=['subject', 'set'], columns="stimulus", values="likert_median").reset_index()
+    median = median.pivot(index=['sona','subject', 'set'], columns="stimulus", values="likert_median").reset_index()
 
     median['Q1'] = 'Some notes felt more important than others.'
     median['Q2'] = 'The audio clip was melodic.'
@@ -45,9 +50,9 @@ def calc_group_level(processed_dir, processed_data_pickle_filename, qualtrics_pr
     })
 
     # Take mean response
-    mean = ATND.groupby(['subject', 'set', 'stimulus'])['response_numeric'].mean().reset_index()
+    mean = ATND.groupby(['sona', 'subject', 'set', 'stimulus'])['response_numeric'].mean().reset_index()
     mean = mean.rename(columns={'response_numeric': 'likert_mean'})
-    mean = mean.pivot(index=['subject', 'set'], columns="stimulus", values="likert_mean").reset_index()
+    mean = mean.pivot(index=['sona','subject', 'set'], columns="stimulus", values="likert_mean").reset_index()
 
     median['Q1'] = 'Some notes felt more important than others.'
     median['Q2'] = 'The audio clip was melodic.'
@@ -61,9 +66,9 @@ def calc_group_level(processed_dir, processed_data_pickle_filename, qualtrics_pr
 
 
     # Number of responses
-    count = ATND.groupby(['subject', 'set', 'stimulus'])['response_numeric'].count().reset_index()
+    count = ATND.groupby(['sona','subject', 'set', 'stimulus'])['response_numeric'].count().reset_index()
     count = count.rename(columns={'response_numeric': 'likert_Qs'})
-    count = count.pivot(index=['subject', 'set'], columns="stimulus", values="likert_Qs").reset_index()
+    count = count.pivot(index=['sona','subject', 'set'], columns="stimulus", values="likert_Qs").reset_index()
     count = count.rename(columns={
         'Some notes felt more important than others.': 'Q1 responses',
         'The audio clip was melodic.': 'Q2 responses',
@@ -74,9 +79,9 @@ def calc_group_level(processed_dir, processed_data_pickle_filename, qualtrics_pr
 
 
     # RTs of responses
-    RTs = ATND.groupby(['subject', 'set', 'stimulus'])['rt'].median().reset_index()
+    RTs = ATND.groupby(['sona','subject', 'set', 'stimulus'])['rt'].median().reset_index()
     RTs = RTs.rename(columns={'rt': 'likert_rt'})
-    RTs = RTs.pivot(index=['subject', 'set'], columns="stimulus", values="likert_rt").reset_index()
+    RTs = RTs.pivot(index=['sona','subject', 'set'], columns="stimulus", values="likert_rt").reset_index()
     RTs = RTs.rename(columns={
         'Some notes felt more important than others.': 'Q1 RT',
         'The audio clip was melodic.': 'Q2 RT',
@@ -84,17 +89,17 @@ def calc_group_level(processed_dir, processed_data_pickle_filename, qualtrics_pr
     })
 
     # The original df is merged with other calculated data.
-    GL = pd.merge(GL, median, on=['subject', 'set'])
-    GL = pd.merge(GL, mean, on=['subject', 'set'])
-    GL = pd.merge(GL, count, on=['subject', 'set'])
-    GL = pd.merge(GL, RTs, on=['subject', 'set'])
+    GL = pd.merge(GL, median, on=['sona','subject', 'set'])
+    GL = pd.merge(GL, mean, on=['sona','subject', 'set'])
+    GL = pd.merge(GL, count, on=['sona','subject', 'set'])
+    GL = pd.merge(GL, RTs, on=['sona','subject', 'set'])
 
 
     # Mark whether the subjects understood the task or not
-    understood = ATND.groupby('subject')['understood task'].first().reset_index()
-    GL = pd.merge(GL, understood, on=['subject'])
+    understood = ATND.groupby('sona')['understood task'].first().reset_index()
+    GL = pd.merge(GL, understood, on=['sona'])
 
-    GL = GL.groupby(['subject','set']).first().reset_index()
+    GL = GL.groupby(['sona','subject','set']).first().reset_index()
 
     GL.to_csv(processed_dir + 'group_level_results.csv')  # Saving to file.
 

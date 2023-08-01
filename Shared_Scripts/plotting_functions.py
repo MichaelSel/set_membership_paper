@@ -71,7 +71,7 @@ def bin_by_feature_correlation (dataset, x,y="rate shifted - rate swapped (NN)",
     annotate(ax,x=x, y=y, data=temp)
     plt.show()
 
-def correlation (dataset, x,y="rate shifted - rate swapped (NN)",diatonic="include", normalize=True, figsize=(6,6), type='pearson', itirations = 10000, show_stats=True, width=8, height=6):
+def correlation (dataset, x,y="rate shifted - rate swapped (NN)",diatonic="include", normalize=True, figsize=(6,6), type='pearson', itirations = 10000, show_stats=True, width=8, height=6, save_to=None):
     temp = dataset #loading dataset
     temp = temp.groupby("set").mean(numeric_only=True).reset_index() #collapsing subject by set
     if(diatonic=="exclude"): temp = temp[temp['subset_of_diatonic']==False]
@@ -90,8 +90,9 @@ def correlation (dataset, x,y="rate shifted - rate swapped (NN)",diatonic="inclu
     sns.regplot(x=x, y=y, data=temp, ax=ax)
     if show_stats:
         annotate(ax,x=x, y=y, data=temp, type=type,itirations=itirations)
-    # plt.show()
 
+    if save_to:
+        plt.savefig(save_to)
 
 
 def ridge_coeffs(dataset, X_vars,y_vars,diatonic="include"):
