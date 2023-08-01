@@ -11,7 +11,8 @@ from scipy import stats
 from copy import deepcopy as dc
 import matplotlib.pyplot as plt
 from scipy import spatial
-
+import pingouin as pg
+import random
 
 # Function to shuffle contents of a Panda structure
 def shuffle_panda(df, n, axis=0):
@@ -128,7 +129,7 @@ def permtest_coeffs(X_vars,y_vars,coefficients,dataset, n_iter = 10000, plot=Fal
     # store p-values
     coefs['vars'] = X_vars
     coefs = pd.DataFrame(data={'vars': X_vars, "Coefficient importance": coefficients})
-    return coefs
+    return coefs, P_Vals
 
 # function to run permutation test for a pearson correlation
 def perm_t_test_unpaired(X, Y, reps):
@@ -522,6 +523,45 @@ def bootstrap_ci(X_vars, y_vars, dataset, upper=97.5, lower=2.5):
     interval = np.percentile(bootstrap_panda, upper, axis=0) - np.mean(bootstrap_panda, axis=0)
     return interval, upper_vals, lower_vals
 
+def perm_one_sample_t_test(X, reps):
+    # convert input to numpy
+    X = np.array(X)
+
+    # initialize vector to hold statistic on each iteration
+    rand_vals = list()
+    # get observed statistic based on the test of interest
+    observation = stats.ttest_1samp(X, popmean=0.5)
+    obs_stat = observation[0]
+
+    # concatenate data from both vars
+    data_concat = X
+
+    for ii in range(reps):
+        print('\r{} of {}'.format(ii, reps), end='')
+
+        # randomly multiply by -1 on different elements of the vector
+        data_concat = data_concat * np.random.choice([-1, 1], size=len(data_concat))
+
+        rand = stats.ttest_1samp(data_concat, popmean=0.5)
+        rand = rand[0]
+
+        # push back R value
+        rand_vals.append(rand)
+
+    rand_vals = np.array(rand_vals)
+
+    # look at probability on either side of the distribution based on the observed statistic - this function is
+    # therefore order invariant with respect to its inputs
+    prob = np.mean(np.abs(rand_vals) > np.abs(obs_stat))
+
+    _ = plt.hist(rand_vals, bins='auto')  # arguments are passed to np.histogram
+    plt.show()
+
+    print(f'p = {prob}')
+    print(f'obs_stat = {obs_stat}')
+
+    return obs_stat, prob
+
 def ridge_regression(dataset, X_vars,y_vars):
     X = dataset[X_vars].astype(float)
     y = dataset[y_vars].to_numpy()
@@ -537,3 +577,70 @@ def ridge_regression(dataset, X_vars,y_vars):
     score = r2_score(y, y_prediction)
     coefficients = clf.coef_ * X.std(axis=0)
     return score, coefficients
+
+
+# function to run permutation test for a variety of statistical comparisons. BehavMeasure ('RT' or 'PC'). stick with
+# F-value here. Conds argument needs to be an array of size 1x2 (string labels)
+def permtest_ANOVA_mixed(data_panda, dv, between_measure, within_measure, ids, reps):
+
+    # initialize vector to hold statistic on each iteration
+    rands_main_one = list()
+    rands_main_two = list()
+    rands_interaction = list()
+
+    # get observed statistics (interaction) for two-way ANOVA
+
+    results = pg.mixed_anova(dv=dv, between=between_measure,
+                             within=within_measure, subject=ids, data=data_panda)
+
+    # get observed interaction F-value: mixed-effects interaction
+    main_effect_one = results.F[0]
+    main_effect_two = results.F[1]
+    obs_stat_interaction = results.F[2]
+
+    # deep copy of panda structure
+    shuffled_panda = data_panda.copy()
+
+    # loop through repetitions
+    for ii in range(reps):
+
+        print('\r{} of {}'.format(ii, reps), end='')
+
+        # shuffle column with behavioral measure of interest (RT or PC)
+        shuffled_panda[dv] = np.random.permutation(shuffled_panda[dv].values)
+
+        # get randomized statistic (interaction) for two-way ANOVA
+        results_rand= pg.mixed_anova(dv=dv, between=between_measure,
+                                 within=within_measure, subject=ids, data=shuffled_panda)
+
+        # get interaction F-value for shuffled structure: interaction
+        main_effect_one_F_rand = results_rand.F[0]
+        main_effect_two_F_rand = results_rand.F[1]
+        interaction_F_vals_rand = results_rand.F[2]
+
+        # push back rand F value
+        rands_main_one.append(main_effect_one_F_rand)
+        rands_main_two.append(main_effect_two_F_rand)
+        rands_interaction.append(interaction_F_vals_rand)
+
+    rands_main_one = np.array(rands_main_one)
+    rands_main_two = np.array(rands_main_two)
+    rands_interaction = np.array(rands_interaction)
+
+    # look at probability on either side of the distribution based on the observed statistic - this function is
+    # therefore order invariant with respect to its inputs
+    prob_main_one = np.mean(rands_main_one > main_effect_one)
+    prob_main_two = np.mean(rands_main_two > main_effect_two)
+    prob_interaction = np.mean(rands_interaction > obs_stat_interaction)
+
+    _ = plt.hist(rands_interaction, bins='auto')  # arguments are passed to np.histogram
+    plt.show()
+
+    print(f'p_interaction = {prob_interaction}')
+    print(f'obs_stat_interaction = {obs_stat_interaction}')
+    print(f'p_main_one_length = {prob_main_one}')
+    print(f'obs_main_onr_set = {main_effect_one}')
+    print(f'p_main_one_length = {prob_main_two}')
+    print(f'obs_main_two_set = {main_effect_two}')
+
+    return results

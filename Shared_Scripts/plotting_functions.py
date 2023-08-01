@@ -114,7 +114,9 @@ def ridge_coeffs(dataset, X_vars,y_vars,diatonic="include"):
     print("DONE.")
 
     print("\nRunning Permutation Tests.")
-    coefs = permtest_coeffs(X_vars=X_vars, y_vars=y_vars, coefficients=coefficients, dataset=dataset)
+    coefs, P_Vals = permtest_coeffs(X_vars=X_vars, y_vars=y_vars, coefficients=coefficients, dataset=dataset)
+    print("p-values:")
+    print(P_Vals)
     print("DONE.")
 
     print("\nPlotting:")
