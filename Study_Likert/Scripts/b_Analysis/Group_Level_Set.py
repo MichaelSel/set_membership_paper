@@ -95,6 +95,15 @@ def calc_group_level(processed_dir, processed_data_pickle_filename, qualtrics_pr
     GL = pd.merge(GL, RTs, on=['sona','subject', 'set'])
 
 
+
+    Demographics = ATND.groupby(['sona'])['subject_gender','subject_age']
+    Demographics = Demographics.first().reset_index()
+    GL = pd.merge(GL, Demographics, on=['sona'])
+
+
+
+
+
     # Mark whether the subjects understood the task or not
     understood = ATND.groupby('sona')['understood task'].first().reset_index()
     GL = pd.merge(GL, understood, on=['sona'])
