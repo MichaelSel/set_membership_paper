@@ -2,4 +2,4 @@
 /StudyI_Pentatonic_vs_Chromatic/Data/Experimental/Raw/*
 /StudyII_All_5_note_Sets/Data/Experimental/Raw/
 /**/*.pickle
-__pycache__/
+**/__pycache__
