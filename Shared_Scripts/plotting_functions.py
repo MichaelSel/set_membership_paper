@@ -129,6 +129,9 @@ def ridge_coeffs(dataset, X_vars,y_vars,diatonic="include"):
         ax.errorbar(range(len(X_vars)), coefs["Coefficient importance"],
                     yerr=ci_interval,
                     fmt='.', mfc='black', mec='black', ms=0, color='k', linewidth=2)
+    print("ci_intervals:")
+    print(ci_interval)
+    print("DONE.")
     ax.set_yticklabels(np.round(ax.get_yticks(), 3), size=13)
     sns.despine()
     ax.axhline(0, color='k', linewidth=.8)
