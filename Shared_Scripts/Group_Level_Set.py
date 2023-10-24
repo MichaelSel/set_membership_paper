@@ -117,8 +117,9 @@ def calc_group_level(processed_dir, processed_data_pickle_filename, qualtrics_pr
 
     if(run_additional_computations):
         #key-finding r avg:
-        key_r = AT.groupby(['subject', 'set'])['key_r'].mean().reset_index()
-        GL = pd.merge(GL, key_r, on=['subject', 'set'], how="left")
+        if('key_r' in AT.columns):
+            key_r = AT.groupby(['subject', 'set'])['key_r'].mean().reset_index()
+            GL = pd.merge(GL, key_r, on=['subject', 'set'], how="left")
 
         # Actual interval appearance
         I7 = AT.groupby(['subject', 'set'])['I7_count'].mean().reset_index()

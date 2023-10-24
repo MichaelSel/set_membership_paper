@@ -34,8 +34,16 @@ def preprocess_raw(subject_pattern, raw_data_dir, qualtrics_processed_path, proc
                             # By a previous coding error, a few responses did not store the set that was used to generate
                             # them. Therefore, those are skipped
                             if ('set' not in response):
-                                response['malformed'].append("No 'set' field")
-                                continue
+                                # If probe_pitches (mod 12) contains 4 unique values, then it's the diminished set
+                                # If probe_pitches (mod 12) contains 6 unique values, then it's the wholetone set
+                                if(len(set([int(pitch) % 12 for pitch in response['probe_pitches']])) == 4):
+                                    response['set'] = "diminished"
+                                elif(len(set([int(pitch) % 12 for pitch in response['probe_pitches']])) == 6):
+                                    response['set'] = "wholetone"
+                                else:
+                                    response['malformed'].append("No 'set' field")
+                                    continue
+
 
                             # The transposition of the trial
                             transposition = response['transposition']
@@ -56,8 +64,10 @@ def preprocess_raw(subject_pattern, raw_data_dir, qualtrics_processed_path, proc
                             swapped_set = list(set(swapped_from0))
 
                             # Excludes trials that don't use all 5 of the set's notes.
-                            if (len(probe_set) < 5):
+                            if ((len(probe_set) < 4 and response['set'] == "diminished") or (len(probe_set) < 6 and response['set'] == "wholetone")):
                                 response['malformed'].append("probe doesn't include all set's notes.")
+
+
 
                             # Sanity: make sure that the probe and swapped version have the same set, and that the probe
                             # and shifted version do not.
@@ -116,6 +126,7 @@ def preprocess_raw(subject_pattern, raw_data_dir, qualtrics_processed_path, proc
 
                             # Append each response to the list of all responses for all subjects
                             all_responses.append(response)
+
 
     # Once all responses have been appended, reformat the list of responses into a pd Dataframe.
     all_responses = pd.DataFrame.from_dict(all_responses)

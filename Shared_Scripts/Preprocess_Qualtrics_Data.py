@@ -40,7 +40,7 @@ def preprocess_qualtrics(qualtrics_dir, subject_format, destination_file, rename
     qualtrics = qualtrics.rename(columns=rename_schema)
 
     # Drops unwanted columns
-    qualtrics = qualtrics.drop(drop_schema, axis=1)
+    qualtrics = qualtrics.drop(drop_schema, axis=1,errors='ignore')
 
 
     # Save the relevant data to file

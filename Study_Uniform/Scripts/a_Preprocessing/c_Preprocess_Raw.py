@@ -31,21 +31,28 @@ all_responses['I11_count'] = all_responses.apply(lambda row: countInterval(row['
 
 print("Adding set features")
 # Combine with set features based on set
-features = pd.read_csv(ROOT_DIR + "/5-note-sets-with-features.csv")
+features = pd.read_csv(ROOT_DIR + "/uniform-sets-with-features.csv")
+
+#if set is '0 3 6 9' rename it to 'diminished', and if it's '0 2 4 6 8 10' rename it to 'wholetone'
+features['set'] = features['set'].apply(lambda x: 'diminished' if x == '0 3 6 9' else x)
+features['set'] = features['set'].apply(lambda x: 'wholetone' if x == '0 2 4 6 8 10' else x)
+
 all_responses = pd.merge(all_responses, features, on="set")
 all_responses = all_responses.sort_values(by="RecordedDate").reset_index(drop=True)
 
 
-print("Adding key finding r. NOTE: This takes a while. (~30 minutes.)")
-# add key finding stuff
-all_responses['key_r'] = all_responses.apply(
-    lambda row: get_key_r([int(n) % 12 for n in row['probe_pitches'].split()])[0], axis=1)
-
-# Creating 6 sections
-total_responses = all_responses.shape[0]
-sixth = math.ceil(total_responses / 6)
-all_responses['section'] = all_responses.index / sixth
-all_responses['section'] = all_responses['section'].apply(np.floor)
+#
+#
+# print("Adding key finding r. NOTE: This takes a while. (~30 minutes.)")
+# # add key finding stuff
+# all_responses['key_r'] = all_responses.apply(
+#     lambda row: get_key_r([int(n) % 12 for n in row['probe_pitches'].split()])[0], axis=1)
+#
+# # Creating 6 sections
+# total_responses = all_responses.shape[0]
+# sixth = math.ceil(total_responses / 6)
+# all_responses['section'] = all_responses.index / sixth
+# all_responses['section'] = all_responses['section'].apply(np.floor)
 
 all_responses.to_pickle(processed_dir + processed_data_pickle_filename)
 all_responses.head(1000).to_csv(processed_dir + processed_data_csv_filename)
