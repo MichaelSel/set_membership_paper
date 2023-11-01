@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="ProjectRootManager" version="2" project-jdk-name="Scale_Studies" project-jdk-type="Python SDK" />
+  <component name="Black">
+    <option name="sdkName" value="Python 3.9 (set_membership_paper)" />
+  </component>
+  <component name="ProjectRootManager" version="2" project-jdk-name="Python 3.9 (set_membership_paper)" project-jdk-type="Python SDK" />
 </project>

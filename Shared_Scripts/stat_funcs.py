@@ -22,6 +22,54 @@ def shuffle_panda(df, n, axis=0):
     return shuffled_df
 
 
+import numpy as np
+from scipy import stats
+
+# Cohen's d for independent samples t-test
+def cohen_d_independent_t_test(data1, data2):
+    """
+    Compute Cohen's d for an independent samples t-test.
+
+    Parameters:
+        data1 (array-like): Data for the first group.
+        data2 (array-like): Data for the second group.
+
+    Returns:
+        float: Cohen's d effect size.
+    """
+    mean1 = np.mean(data1)
+    mean2 = np.mean(data2)
+    n1 = len(data1)
+    n2 = len(data2)
+    var1 = np.var(data1, ddof=1)  # ddof=1 for sample variance
+    var2 = np.var(data2, ddof=1)
+
+    pooled_std = np.sqrt(((n1 - 1) * var1 + (n2 - 1) * var2) / (n1 + n2 - 2))
+
+    effect_size = (mean1 - mean2) / pooled_std
+
+    return effect_size
+
+# Cohen's d for one sample t-test
+def cohen_d_one_sample(data, pop_mean):
+    """
+    Compute Cohen's d for a one-way t-test comparing a sample to a population mean.
+
+    Parameters:
+        data (array-like): Sample data.
+        pop_mean (float): Known population mean.
+
+    Returns:
+        float: Cohen's d effect size.
+    """
+    sample_mean = np.mean(data)
+    sample_std = np.std(data, ddof=1)  # ddof=1 for sample standard deviation
+    n = len(data)
+
+    effect_size = (sample_mean - pop_mean) / sample_std
+
+    return effect_size
+
 # function to run permutation test for a variety of statistical comparisons. BehavMeasure ('RT' or 'PC')
 def permtest_ANOVA_paired(data_panda, behavMeasure, reps):
     # initialize vector to hold statistic on each iteration
