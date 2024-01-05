@@ -97,7 +97,7 @@ def correlation (dataset, x,y="rate shifted - rate swapped (NN)",diatonic="inclu
 
 def ridge_coeffs(dataset, X_vars,y_vars,diatonic="include"):
 
-    dataset = dataset.groupby("set").mean().reset_index()  # collapsing subject by set
+    dataset = dataset.groupby("set").mean(numeric_only = True).reset_index()  # collapsing subject by set
 
     if (diatonic == "exclude"): dataset = dataset[dataset['subset_of_diatonic'] == False]
     elif (diatonic == "only"):

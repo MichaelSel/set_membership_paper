@@ -118,7 +118,7 @@ def permtest_ANOVA_paired(data_panda, behavMeasure, reps):
 
     return obs_stat, prob
 
-def permtest_coeffs(X_vars,y_vars,coefficients,dataset, n_iter = 10000, plot=False):
+def permtest_coeffs(X_vars,y_vars,coefficients,dataset, n_iter = 10000, plot=True):
 
     if len(X_vars) == 1:
         B = coefficients
@@ -143,21 +143,15 @@ def permtest_coeffs(X_vars,y_vars,coefficients,dataset, n_iter = 10000, plot=Fal
     measures_null[:] = alist
     y_rand = y
     for it in range(n_iter):
+
         print('\r{} of {}'.format(it, n_iter), end='')
         np.random.shuffle(y_rand)
-        # splitting the data
-        # x_train, x_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-        # create an object of LinearRegression class
-        LR = LinearRegression()
-        # fit training data
-        LR.fit(X, y)
-        # predict on test data
-        y_prediction = LR.predict(X)
-        # predict the accuracy score (r2)
-        score = r2_score(y, y_prediction)
-        # get model coefficients
-        rand_coefficients = LR.coef_ * X.std(axis=0)
-        # save null values
+        clf = Ridge(alpha=1.0)
+        clf.fit(X, y_rand)
+        y_prediction = clf.predict(X)
+        rand_score = r2_score(y_rand, y_prediction)
+        rand_coefficients = clf.coef_ * X.std(axis=0)
+
         for ii, var in enumerate(X_vars):
             if len(X_vars) == 1:
                 measures_null[ii].append(rand_coefficients)
