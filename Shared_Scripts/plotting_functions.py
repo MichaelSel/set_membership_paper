@@ -131,6 +131,11 @@ def ridge_coeffs(dataset, X_vars,y_vars,diatonic="include"):
                     fmt='.', mfc='black', mec='black', ms=0, color='k', linewidth=2)
     print("ci_intervals:")
     print(ci_interval)
+    print("ci_intervals (applied):")
+    # add and subtract the confidence intervals from the coefficients
+    coefs["ci_lower"] = coefs["Coefficient importance"] - ci_interval
+    coefs["ci_upper"] = ci_interval - coefs["Coefficient importance"]
+    print(coefs)
     print("DONE.")
     ax.set_yticklabels(np.round(ax.get_yticks(), 3), size=13)
     sns.despine()
