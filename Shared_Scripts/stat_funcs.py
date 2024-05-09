@@ -118,7 +118,7 @@ def permtest_ANOVA_paired(data_panda, behavMeasure, reps):
 
     return obs_stat, prob
 
-def permtest_coeffs(X_vars,y_vars,coefficients,dataset, n_iter = 10000, plot=True):
+def permtest_coeffs(X_vars,y_vars,coefficients, full_score,dataset, n_iter = 10000, plot=True):
 
     if len(X_vars) == 1:
         B = coefficients
@@ -141,6 +141,8 @@ def permtest_coeffs(X_vars,y_vars,coefficients,dataset, n_iter = 10000, plot=Tru
     alist = [[] for _ in range(len(X_vars))]
     measures_null = np.empty(len(X_vars), object)
     measures_null[:] = alist
+    measures_null_entire_model = np.empty(len(X_vars), object)
+    measures_null_entire_model = alist
     y_rand = y
     for it in range(n_iter):
 
@@ -151,6 +153,7 @@ def permtest_coeffs(X_vars,y_vars,coefficients,dataset, n_iter = 10000, plot=Tru
         y_prediction = clf.predict(X)
         rand_score = r2_score(y_rand, y_prediction)
         rand_coefficients = clf.coef_ * X.std(axis=0)
+        measures_null_entire_model.append(np.sqrt(rand_score))
 
         for ii, var in enumerate(X_vars):
             if len(X_vars) == 1:
@@ -168,10 +171,12 @@ def permtest_coeffs(X_vars,y_vars,coefficients,dataset, n_iter = 10000, plot=Tru
             P_Vals.append(np.mean(np.abs(measures_null[ii]) > np.abs(B), axis=0))
         else:
             P_Vals.append(np.mean(np.abs(measures_null[ii]) > np.abs(eval("coefficients." + var)), axis=0))
+
+    P_Val_full_model = np.mean(measures_null_entire_model[ii] > full_score, axis=0)
     # store p-values
     coefs['vars'] = X_vars
     coefs = pd.DataFrame(data={'vars': X_vars, "Coefficient importance": coefficients})
-    return coefs, P_Vals
+    return coefs, P_Vals, P_Val_full_model
 
 # function to run permutation test for a pearson correlation
 def perm_t_test_unpaired(X, Y, reps):
