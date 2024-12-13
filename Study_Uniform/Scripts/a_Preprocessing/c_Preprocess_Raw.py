@@ -48,11 +48,11 @@ all_responses = all_responses.sort_values(by="RecordedDate").reset_index(drop=Tr
 # all_responses['key_r'] = all_responses.apply(
 #     lambda row: get_key_r([int(n) % 12 for n in row['probe_pitches'].split()])[0], axis=1)
 #
-# # Creating 6 sections
-# total_responses = all_responses.shape[0]
-# sixth = math.ceil(total_responses / 6)
-# all_responses['section'] = all_responses.index / sixth
-# all_responses['section'] = all_responses['section'].apply(np.floor)
+# Creating 6 sections
+total_responses = all_responses.shape[0]
+sixth = math.ceil(total_responses / 6)
+all_responses['section'] = all_responses.index / sixth
+all_responses['section'] = all_responses['section'].apply(np.floor)
 
 all_responses.to_pickle(processed_dir + processed_data_pickle_filename)
 all_responses.head(1000).to_csv(processed_dir + processed_data_csv_filename)
