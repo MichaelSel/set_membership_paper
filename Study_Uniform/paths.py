@@ -1,6 +1,6 @@
 import os
 
-SUBJECT_PATTERN = 'ATON\d'
+SUBJECT_PATTERN = 'ATONB\d'
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))  # This is where this file is
 DATA_DIR = ROOT_DIR + "/Data/"
 qualtrics_dir = ROOT_DIR + '/Data/Qualtrics/Raw/'
