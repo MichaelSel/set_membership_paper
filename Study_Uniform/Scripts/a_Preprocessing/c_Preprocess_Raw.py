@@ -37,6 +37,9 @@ features = pd.read_csv(ROOT_DIR + "/uniform-sets-with-features.csv")
 features['set'] = features['set'].apply(lambda x: 'diminished' if x == '0 3 6 9' else x)
 features['set'] = features['set'].apply(lambda x: 'wholetone' if x == '0 2 4 6 8 10' else x)
 
+# new column "length" based on len(row['probe_pitches'])
+all_responses['length'] = all_responses.apply(lambda row: len(row['probe_pitches'].split(" ")), axis=1)
+
 all_responses = pd.merge(all_responses, features, on="set")
 all_responses = all_responses.sort_values(by="RecordedDate").reset_index(drop=True)
 
